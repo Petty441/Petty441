@@ -1,0 +1,39 @@
+name: Compile and Upload Mesa Panfrost
+
+on:
+  push:
+    branches:
+      - Panfrost-G610
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git meson ninja-build
+
+      - name: Compile Mesa Panfrost
+        run: |
+          git clone -b Panfrost-G610 --depth 1 https://github.com/Saikatsaha1996/mesa-Panfrost-G610
+          cd mesa-Panfrost-G610
+          mkdir build
+          cd build
+          CFLAGS="-O3" meson -Dgallium-drivers=panfrost,swrast -Dvulkan-drivers= -Dbuildtype=release -Dllvm=disabled -Dprefix=/usr ..
+          ninja -j8
+
+      - name: Upload compiled files
+        uses: actions/upload-artifact@v2
+        with:
+          name: mesa-panfrost
+          path: |
+            mesa-Panfrost-G610/build/include
+            mesa-Panfrost-G610/build/lib
+            mesa-Panfrost-G610/build/lib32
+            mesa-Panfrost-G610/build/share
+            
